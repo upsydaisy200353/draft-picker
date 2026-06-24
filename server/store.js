@@ -188,6 +188,7 @@ export function getPublicState(forUser = null) {
     : null;
 
   const isAdmin = forUser?.role === 'admin';
+  const isSpectator = forUser?.role === 'spectator';
   const isCurrentCaptain = forUser?.role === 'captain' && forUser.captainId === currentCaptainId;
   const isAdminDrafting = isAdmin && s.status === 'drafting';
   const canDraft = isCurrentCaptain || isAdminDrafting;
@@ -241,10 +242,11 @@ export function getPublicState(forUser = null) {
         }),
       },
     ],
-    turn: canDraft ? turn : turn ? { phase: turn.phase } : null,
+    turn: canDraft || isSpectator ? turn : turn ? { phase: turn.phase } : null,
     canAct: canDraft,
     isMyTurn: canDraft,
     adminDrafting: isAdminDrafting,
+    isSpectator,
     myProfile,
     allPlayers: cfg.players.map((p) => ({
       id: p.id,
@@ -265,7 +267,7 @@ export function getPublicState(forUser = null) {
       id: c.id,
       name: c.name,
       strength: c.strength,
-      username: c.username,
+      ...(isSpectator ? {} : { username: c.username }),
       online: onlineCaptainIds.has(c.id),
     })),
   };

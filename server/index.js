@@ -98,6 +98,10 @@ app.get('/api/state', authMiddleware, (req, res) => {
   res.json(getStateForUser(req.user));
 });
 
+app.get('/api/public/state', (req, res) => {
+  res.json(getStateForUser({ role: 'spectator' }));
+});
+
 app.get('/api/suggested-order', authMiddleware, (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: '仅管理员可操作' });
   res.json({ order: getSuggestedOrder() });
@@ -203,6 +207,10 @@ app.post('/api/draft/reject', authMiddleware, (req, res) => {
 });
 
 io.use((socket, next) => {
+  if (socket.handshake.auth?.spectator) {
+    socket.user = { role: 'spectator' };
+    return next();
+  }
   const token = socket.handshake.auth?.token;
   if (!token) return next(new Error('未登录'));
   const user = verifyToken(token);

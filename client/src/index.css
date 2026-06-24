@@ -178,6 +178,24 @@ input:focus {
   padding: 12px;
 }
 
+.login-divider {
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+  margin: 20px 0 12px;
+}
+
+.login-spectator-btn {
+  width: 100%;
+}
+
+.login-spectator-hint {
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 10px;
+}
+
 .error-msg {
   background: rgba(239, 68, 68, 0.15);
   border: 1px solid var(--danger);

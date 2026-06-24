@@ -5,9 +5,15 @@ import AdminPanel from './components/AdminPanel';
 import DraftArea from './components/DraftArea';
 import TeamBoard from './components/TeamBoard';
 import PlayerView from './components/PlayerView';
+import SpectatorView from './components/SpectatorView';
 import PlayerPool from './components/PlayerPool';
 
 const API = '';
+
+const SPECTATOR_AUTH = {
+  spectator: true,
+  user: { role: 'spectator', name: '观众' },
+};
 
 function getStoredAuth() {
   try {
@@ -18,12 +24,21 @@ function getStoredAuth() {
   }
 }
 
+function shouldAutoWatch() {
+  return new URLSearchParams(window.location.search).get('watch') === '1';
+}
+
 export default function App() {
-  const [auth, setAuth] = useState(getStoredAuth);
+  const [auth, setAuth] = useState(() => {
+    if (shouldAutoWatch()) return SPECTATOR_AUTH;
+    return getStoredAuth();
+  });
   const [state, setState] = useState(null);
   const [error, setError] = useState('');
   const [connected, setConnected] = useState(false);
   const [socket, setSocket] = useState(null);
+
+  const isSpectator = auth?.spectator || auth?.user?.role === 'spectator';
 
   const api = useCallback(
     async (path, options = {}) => {
@@ -31,7 +46,7 @@ export default function App() {
         ...options,
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${auth?.token}`,
+          ...(auth?.token ? { Authorization: `Bearer ${auth.token}` } : {}),
           ...options.headers,
         },
       });
@@ -43,15 +58,17 @@ export default function App() {
   );
 
   useEffect(() => {
-    if (!auth?.token) return;
+    if (!auth) return;
 
-    api('/api/state')
+    const stateUrl = isSpectator ? '/api/public/state' : '/api/state';
+    fetch(`${API}${stateUrl}`)
+      .then((r) => r.json())
       .then(setState)
       .catch((e) => setError(e.message));
 
     const socketUrl = import.meta.env.DEV ? 'http://localhost:3001' : undefined;
     const s = io(socketUrl, {
-      auth: { token: auth.token },
+      auth: isSpectator ? { spectator: true } : { token: auth.token },
       transports: ['websocket', 'polling'],
     });
 
@@ -61,7 +78,7 @@ export default function App() {
     s.on('state', setState);
 
     return () => s.disconnect();
-  }, [auth, api]);
+  }, [auth, isSpectator]);
 
   const handleLogin = async (username, password) => {
     const res = await fetch(`${API}/api/login`, {
@@ -75,11 +92,19 @@ export default function App() {
     setAuth(data);
   };
 
+  const handleSpectator = () => {
+    setAuth(SPECTATOR_AUTH);
+    setError('');
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('draft_auth');
     setAuth(null);
     setState(null);
     socket?.disconnect();
+    if (shouldAutoWatch()) {
+      window.history.replaceState({}, '', window.location.pathname);
+    }
   };
 
   const draftAction = async (path, body) => {
@@ -92,7 +117,7 @@ export default function App() {
   };
 
   if (!auth) {
-    return <LoginPage onLogin={handleLogin} />;
+    return <LoginPage onLogin={handleLogin} onSpectator={handleSpectator} />;
   }
 
   const statusText = {
@@ -109,6 +134,30 @@ export default function App() {
     4: 'R4：抽1人，可拒绝重抽1次',
   };
 
+  const roleLabel = isSpectator
+    ? '（观看）'
+    : auth.user.role === 'admin'
+      ? '（管理员）'
+      : auth.user.role === 'captain'
+        ? '（队长）'
+        : '（队员）';
+
+  const mainPanel = isSpectator ? (
+    <SpectatorView state={state} />
+  ) : auth.user.role === 'player' ? (
+    <PlayerView state={state} user={auth.user} />
+  ) : (
+    <DraftArea
+      state={state}
+      user={auth.user}
+      onBegin={() => draftAction('/api/draft/begin')}
+      onSelect={(playerId) => draftAction('/api/draft/select', { playerId })}
+      onReroll={(playerId) => draftAction('/api/draft/reroll', { playerId })}
+      onAccept={() => draftAction('/api/draft/accept')}
+      onReject={() => draftAction('/api/draft/reject')}
+    />
+  );
+
   return (
     <div className="app">
       <header className="header">
@@ -120,12 +169,10 @@ export default function App() {
           </span>
           <span>
             <strong>{auth.user.name}</strong>
-            {auth.user.role === 'admin' && '（管理员）'}
-            {auth.user.role === 'captain' && '（队长）'}
-            {auth.user.role === 'player' && '（队员）'}
+            {roleLabel}
           </span>
           <button className="btn-secondary" onClick={handleLogout}>
-            退出
+            {isSpectator ? '退出观看' : '退出'}
           </button>
         </div>
       </header>
@@ -156,19 +203,7 @@ export default function App() {
           )}
 
           <div className="grid-2" style={{ marginBottom: 20 }}>
-            {auth.user.role === 'player' ? (
-              <PlayerView state={state} user={auth.user} />
-            ) : (
-              <DraftArea
-                state={state}
-                user={auth.user}
-                onBegin={() => draftAction('/api/draft/begin')}
-                onSelect={(playerId) => draftAction('/api/draft/select', { playerId })}
-                onReroll={(playerId) => draftAction('/api/draft/reroll', { playerId })}
-                onAccept={() => draftAction('/api/draft/accept')}
-                onReject={() => draftAction('/api/draft/reject')}
-              />
-            )}
+            {mainPanel}
             <TeamBoard state={state} />
           </div>
 

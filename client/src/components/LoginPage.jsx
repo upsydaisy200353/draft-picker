@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export default function LoginPage({ onLogin }) {
+export default function LoginPage({ onLogin, onSpectator }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -48,6 +48,11 @@ export default function LoginPage({ onLogin }) {
             {loading ? '登录中...' : '登录'}
           </button>
         </form>
+        <div className="login-divider">或</div>
+        <button type="button" className="btn-secondary login-spectator-btn" onClick={onSpectator}>
+          观看模式（无需登录）
+        </button>
+        <p className="login-spectator-hint">实时查看抽卡进度与各队阵容，无法操作</p>
       </div>
     </div>
   );
