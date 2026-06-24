@@ -7,6 +7,7 @@ import TeamBoard from './components/TeamBoard';
 import PlayerView from './components/PlayerView';
 import SpectatorView from './components/SpectatorView';
 import PlayerPool from './components/PlayerPool';
+import DraftHistory from './components/DraftHistory';
 
 const API = '';
 
@@ -208,6 +209,8 @@ export default function App() {
           </div>
 
           <PlayerPool players={state.allPlayers} />
+
+          <DraftHistory history={state.history} />
         </>
       )}
 

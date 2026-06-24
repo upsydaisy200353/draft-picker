@@ -394,6 +394,81 @@ input:focus {
   font-size: 14px;
 }
 
+.draft-history {
+  margin-top: 20px;
+}
+
+.history-summary {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+
+.history-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.history-round-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.history-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.history-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  padding: 8px 12px;
+  background: var(--surface2);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.history-time {
+  color: var(--muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  min-width: 64px;
+}
+
+.history-team {
+  color: var(--gold);
+  font-weight: 500;
+}
+
+.history-arrow {
+  color: var(--muted);
+}
+
+.history-player {
+  font-weight: 500;
+}
+
+.history-note {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--warning);
+  margin-left: auto;
+}
+
 .team-card h3 {
   font-size: 15px;
   margin-bottom: 8px;

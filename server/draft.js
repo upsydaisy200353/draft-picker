@@ -6,6 +6,8 @@ import {
   initState,
   getConfig,
   LEFTOVER_TEAM_ID,
+  recordPick,
+  recordLeftoverPicks,
 } from './store.js';
 
 function assertDrafting() {
@@ -26,6 +28,7 @@ function assertCurrentCaptain(captainId) {
 }
 
 function finishCaptainTurn() {
+  let leftoverIds = [];
   updateState((s) => {
     s.turn = null;
     s.currentIndex += 1;
@@ -33,7 +36,8 @@ function finishCaptainTurn() {
       s.currentIndex = 0;
       if (s.round === 4) {
         if (!s.teams[LEFTOVER_TEAM_ID]) s.teams[LEFTOVER_TEAM_ID] = [];
-        for (const pid of s.availablePlayerIds) {
+        leftoverIds = [...s.availablePlayerIds];
+        for (const pid of leftoverIds) {
           s.teams[LEFTOVER_TEAM_ID].push(pid);
         }
         s.availablePlayerIds = [];
@@ -43,6 +47,7 @@ function finishCaptainTurn() {
       }
     }
   });
+  if (leftoverIds.length) recordLeftoverPicks(leftoverIds);
 }
 
 function pickPlayer(captainId, playerId) {
@@ -111,7 +116,9 @@ export function selectCard(captainId, playerId) {
   const valid = s.turn.drawnCards.some((p) => p.id === playerId);
   if (!valid) throw new Error('只能选择本次抽到的卡牌');
 
+  const rerolled = s.turn.rerollUsed ?? false;
   pickPlayer(captainId, playerId);
+  recordPick(captainId, playerId, { rerolled });
   finishCaptainTurn();
   return getPublicState();
 }
@@ -144,7 +151,9 @@ export function acceptDraw(captainId) {
   if (!s.turn || s.turn.phase !== 'confirming') throw new Error('请先抽卡');
   if (!s.turn.currentDraw) throw new Error('没有待确认的卡牌');
 
+  const rejected = s.turn.rejectUsed ?? false;
   pickPlayer(captainId, s.turn.currentDraw.id);
+  recordPick(captainId, s.turn.currentDraw.id, { rejected });
   finishCaptainTurn();
   return getPublicState();
 }

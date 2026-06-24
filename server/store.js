@@ -60,6 +60,7 @@ function createInitialState() {
     availablePlayerIds: [...available],
     teams,
     turn: null,
+    history: [],
   };
 }
 
@@ -76,6 +77,7 @@ export function loadState() {
       if (state.teams && state.teams[LEFTOVER_TEAM_ID] === undefined) {
         state.teams[LEFTOVER_TEAM_ID] = [];
       }
+      if (!state.history) state.history = [];
       return state;
     } catch {
       state = createInitialState();
@@ -167,6 +169,33 @@ export function assignLeftoverTeam() {
     s.availablePlayerIds = [];
     s.status = 'complete';
   });
+}
+
+export function recordPick(captainId, playerId, extra = {}) {
+  const cap = getCaptainById(captainId);
+  const player = getPlayerById(playerId);
+  const s = getState();
+  const isLeftover = captainId === LEFTOVER_TEAM_ID;
+  updateState((st) => {
+    if (!st.history) st.history = [];
+    st.history.push({
+      id: `${Date.now()}_${st.history.length}`,
+      round: s.round,
+      captainId,
+      captainName: isLeftover ? LEFTOVER_TEAM_NAME : (cap?.name ?? captainId),
+      teamName: isLeftover ? LEFTOVER_TEAM_NAME : (cap ? `${cap.name}队` : captainId),
+      playerId,
+      playerName: player?.name ?? playerId,
+      timestamp: new Date().toISOString(),
+      ...extra,
+    });
+  });
+}
+
+export function recordLeftoverPicks(playerIds) {
+  for (const pid of playerIds) {
+    recordPick(LEFTOVER_TEAM_ID, pid, { auto: true });
+  }
 }
 
 export function getPublicState(forUser = null) {
@@ -269,6 +298,17 @@ export function getPublicState(forUser = null) {
       strength: c.strength,
       ...(isSpectator ? {} : { username: c.username }),
       online: onlineCaptainIds.has(c.id),
+    })),
+    history: (s.history ?? []).map((h) => ({
+      id: h.id,
+      round: h.round,
+      captainName: h.captainName,
+      teamName: h.teamName,
+      playerName: h.playerName,
+      timestamp: h.timestamp,
+      rerolled: h.rerolled ?? false,
+      rejected: h.rejected ?? false,
+      auto: h.auto ?? false,
     })),
   };
 }
