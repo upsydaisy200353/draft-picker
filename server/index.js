@@ -24,6 +24,7 @@ import {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3001;
+const HOST = process.env.HOST || '0.0.0.0';
 
 loadConfig();
 loadState();
@@ -184,6 +185,6 @@ app.get('*', (req, res) => {
   });
 });
 
-httpServer.listen(PORT, () => {
-  console.log(`选人抽卡服务已启动: http://localhost:${PORT}`);
+httpServer.listen(PORT, HOST, () => {
+  console.log(`选人抽卡服务已启动: http://${HOST}:${PORT}`);
 });
