@@ -39,6 +39,99 @@ export function reloadConfig() {
   return { config, state: getPublicState() };
 }
 
+export function getAdminRoster() {
+  const cfg = getConfig();
+  const s = getState();
+  return {
+    canEdit: s.status !== 'drafting',
+    captains: cfg.captains.map((c) => ({
+      id: c.id,
+      name: c.name,
+      username: c.username,
+      password: c.password,
+      strength: c.strength,
+      skill: c.skill ?? '',
+      game_id: c.game_id ?? '',
+    })),
+    players: cfg.players.map((p) => ({
+      id: p.id,
+      name: p.name,
+      username: p.username,
+      password: p.password,
+      skill: p.skill ?? '',
+      game_id: p.game_id ?? '',
+    })),
+  };
+}
+
+function requireName(name, label) {
+  const trimmed = String(name ?? '').trim();
+  if (!trimmed) throw new Error(`${label}姓名不能为空`);
+  return trimmed;
+}
+
+export function saveRoster({ captains, players }) {
+  const s = getState();
+  if (s.status === 'drafting') {
+    throw new Error('抽卡进行中无法修改名单，请等待本轮结束或重置抽卡');
+  }
+  if (!Array.isArray(captains) || captains.length !== 5) {
+    throw new Error('队长必须为 5 人');
+  }
+  if (!Array.isArray(players) || players.length !== 25) {
+    throw new Error('选手必须为 25 人');
+  }
+
+  const cfg = getConfig();
+  const captainIds = new Set();
+  const playerIds = new Set();
+
+  const newCaptains = captains.map((c, i) => {
+    const existing = cfg.captains.find((x) => x.id === c.id) ?? cfg.captains[i];
+    const id = c.id || existing?.id || `c${i + 1}`;
+    if (captainIds.has(id)) throw new Error('队长 ID 不能重复');
+    captainIds.add(id);
+    const strength = Number(c.strength);
+    if (!Number.isFinite(strength) || strength < 1) {
+      throw new Error(`队长 ${c.name || id} 的实力值无效`);
+    }
+    return {
+      id,
+      name: requireName(c.name, '队长'),
+      username: existing?.username ?? `captain${i + 1}`,
+      password: existing?.password ?? `hd${String(i + 1).padStart(2, '0')}`,
+      strength,
+      skill: String(c.skill ?? '').trim(),
+      game_id: String(c.game_id ?? '').trim(),
+    };
+  });
+
+  const newPlayers = players.map((p, i) => {
+    const existing = cfg.players.find((x) => x.id === p.id) ?? cfg.players[i];
+    const id = p.id || existing?.id || `p${i + 1}`;
+    if (playerIds.has(id)) throw new Error('选手 ID 不能重复');
+    playerIds.add(id);
+    return {
+      id,
+      name: requireName(p.name, '选手'),
+      username: existing?.username ?? `player${i + 1}`,
+      password: existing?.password ?? `mp${String(i + 1).padStart(2, '0')}`,
+      skill: String(p.skill ?? '').trim(),
+      game_id: String(p.game_id ?? '').trim(),
+    };
+  });
+
+  config = {
+    ...cfg,
+    captains: newCaptains,
+    players: newPlayers,
+  };
+  fs.writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2), 'utf-8');
+  loadConfig();
+  initState();
+  return getAdminRoster();
+}
+
 const LEFTOVER_TEAM_ID = 'leftover';
 const LEFTOVER_TEAM_NAME = '第六队（余剩）';
 

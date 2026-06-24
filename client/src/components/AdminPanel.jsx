@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
+import RosterEditor from './RosterEditor';
 
-export default function AdminPanel({ state, api, onError }) {
+export default function AdminPanel({ state, api, onError, onRosterSaved }) {
   const [order, setOrder] = useState([]);
   const [loading, setLoading] = useState(false);
   const [accounts, setAccounts] = useState(null);
@@ -184,6 +185,16 @@ export default function AdminPanel({ state, api, onError }) {
           四轮全部完成，剩余选手已自动编入第六队。如需重新抽卡请点击「重置抽卡」。
         </p>
       )}
+
+      <RosterEditor
+        api={api}
+        onError={onError}
+        onSaved={() => {
+          setOrder([]);
+          onRosterSaved?.();
+        }}
+        draftStatus={state.status}
+      />
 
       <div className="admin-section" style={{ marginTop: 20 }}>
         <h3>账号列表</h3>

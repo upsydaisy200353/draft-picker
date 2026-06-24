@@ -718,3 +718,97 @@ input:focus {
   display: inline-block;
   margin-right: 6px;
 }
+
+.roster-editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.roster-editor-header h3 {
+  margin: 0;
+}
+
+.roster-editor-warn {
+  font-size: 13px;
+  color: var(--warning);
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  background: rgba(245, 158, 11, 0.1);
+  border-radius: 8px;
+}
+
+.roster-block {
+  margin-bottom: 16px;
+}
+
+.roster-block h4 {
+  font-size: 14px;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+.roster-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.roster-table-wrap-tall {
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.roster-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.roster-table th,
+.roster-table td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.roster-table th {
+  position: sticky;
+  top: 0;
+  background: var(--surface2);
+  color: var(--muted);
+  font-weight: 500;
+  z-index: 1;
+}
+
+.roster-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.roster-table input {
+  width: 100%;
+  min-width: 72px;
+  padding: 6px 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.roster-table input:disabled {
+  opacity: 0.6;
+}
+
+.roster-input-narrow {
+  max-width: 64px;
+}
+
+.roster-readonly {
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}

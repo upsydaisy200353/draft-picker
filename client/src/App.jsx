@@ -207,7 +207,12 @@ export default function App() {
           </div>
 
           {auth.user.role === 'admin' && (
-            <AdminPanel state={state} api={api} onError={setError} />
+            <AdminPanel
+              state={state}
+              api={api}
+              onError={setError}
+              onRosterSaved={() => setState(null)}
+            />
           )}
 
           <div className="grid-2" style={{ marginBottom: 20 }}>

@@ -11,6 +11,8 @@ import {
   reloadConfig,
   getPublicState,
   getConfig,
+  getAdminRoster,
+  saveRoster,
 } from './store.js';
 import {
   captainConnected,
@@ -105,6 +107,22 @@ app.get('/api/public/state', (req, res) => {
 app.get('/api/suggested-order', authMiddleware, (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: '仅管理员可操作' });
   res.json({ order: getSuggestedOrder() });
+});
+
+app.get('/api/admin/roster', authMiddleware, (req, res) => {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: '仅管理员可操作' });
+  res.json(getAdminRoster());
+});
+
+app.put('/api/admin/roster', authMiddleware, (req, res) => {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: '仅管理员可操作' });
+  try {
+    const roster = saveRoster(req.body);
+    broadcastState();
+    res.json(roster);
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
 });
 
 app.get('/api/admin/accounts', authMiddleware, (req, res) => {
