@@ -3,6 +3,8 @@ import {
   getConfig,
   verifyPassword,
   getCaptainByUsername,
+  getPlayerByUsername,
+  getPlayerById,
   getPublicState,
 } from './store.js';
 
@@ -33,6 +35,24 @@ export function login(username, password) {
         username,
         captainId: captain.id,
         name: captain.name,
+      },
+    };
+  }
+
+  const player = getPlayerByUsername(username);
+  if (player && verifyPassword('player', username, password)) {
+    const token = jwt.sign(
+      { role: 'player', username, playerId: player.id },
+      JWT_SECRET,
+      { expiresIn: '24h' },
+    );
+    return {
+      token,
+      user: {
+        role: 'player',
+        username,
+        playerId: player.id,
+        name: player.name,
       },
     };
   }

@@ -23,7 +23,7 @@ export default function LoginPage({ onLogin }) {
     <div className="login-page">
       <div className="login-card">
         <h1>选人抽卡</h1>
-        <p className="subtitle">队长 / 管理员登录</p>
+        <p className="subtitle">管理员 / 队长 / 队员登录</p>
         {error && <div className="error-msg">{error}</div>}
         <form onSubmit={handleSubmit}>
           <div className="form-group">
@@ -31,7 +31,7 @@ export default function LoginPage({ onLogin }) {
             <input
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="队长或管理员账号"
+              placeholder="账号（admin / captain1 / player1）"
               autoFocus
             />
           </div>

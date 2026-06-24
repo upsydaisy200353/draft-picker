@@ -353,9 +353,27 @@ input:focus {
   color: var(--success);
 }
 
-.online-badge.off {
-  background: var(--border);
+.admin-draft-banner {
+  color: var(--warning);
+  margin-bottom: 8px;
+}
+
+.player-view .player-profile-card {
+  background: var(--surface2);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid var(--border);
+}
+
+.player-profile-name {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.player-profile-status {
   color: var(--muted);
+  font-size: 14px;
 }
 
 .team-card h3 {

@@ -20,6 +20,11 @@ export function loadConfig() {
   for (const c of config.captains) {
     passwordHashes.set(`captain:${c.username}`, bcrypt.hashSync(c.password, 10));
   }
+  for (const p of config.players) {
+    if (p.username && p.password) {
+      passwordHashes.set(`player:${p.username}`, bcrypt.hashSync(p.password, 10));
+    }
+  }
   return config;
 }
 
@@ -111,8 +116,26 @@ export function getCaptainByUsername(username) {
   return getConfig().captains.find((c) => c.username === username);
 }
 
+export function getPlayerByUsername(username) {
+  return getConfig().players.find((p) => p.username === username);
+}
+
 export function getPlayerById(id) {
   return getConfig().players.find((p) => p.id === id);
+}
+
+export function getPlayerTeamInfo(playerId) {
+  const s = getState();
+  for (const [cid, pids] of Object.entries(s.teams)) {
+    if (pids.includes(playerId)) {
+      if (cid === LEFTOVER_TEAM_ID) {
+        return { teamId: cid, teamName: LEFTOVER_TEAM_NAME };
+      }
+      const cap = getCaptainById(cid);
+      return { teamId: cid, teamName: cap ? `${cap.name}队` : cid };
+    }
+  }
+  return { teamId: null, teamName: null };
 }
 
 export function getAvailablePlayers() {
@@ -166,7 +189,22 @@ export function getPublicState(forUser = null) {
 
   const isAdmin = forUser?.role === 'admin';
   const isCurrentCaptain = forUser?.role === 'captain' && forUser.captainId === currentCaptainId;
+  const isAdminDrafting = isAdmin && s.status === 'drafting';
+  const canDraft = isCurrentCaptain || isAdminDrafting;
   const onlineCaptainIds = new Set(getOnlineCaptainIds());
+
+  let myProfile = null;
+  if (forUser?.role === 'player') {
+    const player = getPlayerById(forUser.playerId);
+    const team = getPlayerTeamInfo(forUser.playerId);
+    myProfile = {
+      id: forUser.playerId,
+      name: player?.name ?? forUser.username,
+      inPool: s.availablePlayerIds.includes(forUser.playerId),
+      teamId: team.teamId,
+      teamName: team.teamName,
+    };
+  }
 
   return {
     round: s.round,
@@ -203,9 +241,11 @@ export function getPublicState(forUser = null) {
         }),
       },
     ],
-    turn: isAdmin || isCurrentCaptain ? turn : turn ? { phase: turn.phase } : null,
-    canAct: isAdmin || isCurrentCaptain,
-    isMyTurn: isCurrentCaptain && s.status === 'drafting',
+    turn: canDraft ? turn : turn ? { phase: turn.phase } : null,
+    canAct: canDraft,
+    isMyTurn: canDraft,
+    adminDrafting: isAdminDrafting,
+    myProfile,
     allPlayers: cfg.players.map((p) => ({
       id: p.id,
       name: p.name,

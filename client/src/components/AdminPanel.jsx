@@ -4,6 +4,7 @@ export default function AdminPanel({ state, api, onError }) {
   const [round, setRound] = useState(1);
   const [order, setOrder] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [accounts, setAccounts] = useState(null);
 
   useEffect(() => {
     if (state.captains?.length && order.length === 0) {
@@ -163,6 +164,36 @@ export default function AdminPanel({ state, api, onError }) {
           四轮全部完成，剩余选手已自动编入第六队。如需重新抽卡请点击「重置抽卡」。
         </p>
       )}
+
+      <div className="admin-section" style={{ marginTop: 20 }}>
+        <h3>账号列表</h3>
+        <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 10 }}>
+          抽卡进行中时，管理员可在左侧代当前队长操作。队员账号仅供观战。
+        </p>
+        <button
+          className="btn-secondary"
+          onClick={() => api('/api/admin/accounts').then(setAccounts).catch((e) => onError(e.message))}
+        >
+          查看全部账号密码
+        </button>
+        {accounts && (
+          <div style={{ marginTop: 12, fontSize: 13, maxHeight: 240, overflow: 'auto' }}>
+            <p><strong>管理员</strong> {accounts.admin.username} / {accounts.admin.password}</p>
+            <p style={{ marginTop: 8 }}><strong>队长</strong></p>
+            <ul>
+              {accounts.captains.map((c) => (
+                <li key={c.username}>{c.name} — {c.username} / {c.password}</li>
+              ))}
+            </ul>
+            <p style={{ marginTop: 8 }}><strong>队员</strong></p>
+            <ul>
+              {accounts.players.map((p) => (
+                <li key={p.username}>{p.name} — {p.username} / {p.password}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

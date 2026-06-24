@@ -10,6 +10,7 @@ import {
   loadState,
   reloadConfig,
   getPublicState,
+  getConfig,
 } from './store.js';
 import {
   captainConnected,
@@ -25,6 +26,25 @@ import {
   resetDraft,
   getSuggestedOrder,
 } from './draft.js';
+import { getState } from './store.js';
+
+function resolveCaptainIdForDraft(user) {
+  if (user.role === 'captain') return user.captainId;
+  if (user.role === 'admin') {
+    const s = getState();
+    if (s.status !== 'drafting') throw new Error('当前不在抽卡阶段');
+    const captainId = s.captainOrder[s.currentIndex];
+    if (!captainId) throw new Error('没有轮到的队长');
+    return captainId;
+  }
+  throw new Error('无权操作');
+}
+
+function assertDraftActor(user) {
+  if (user.role !== 'captain' && user.role !== 'admin') {
+    throw new Error('无权操作');
+  }
+}
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3001;
@@ -83,6 +103,24 @@ app.get('/api/suggested-order', authMiddleware, (req, res) => {
   res.json({ order: getSuggestedOrder() });
 });
 
+app.get('/api/admin/accounts', authMiddleware, (req, res) => {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: '仅管理员可操作' });
+  const cfg = getConfig();
+  res.json({
+    admin: { username: cfg.admin.username, password: cfg.admin.password },
+    captains: cfg.captains.map((c) => ({
+      name: c.name,
+      username: c.username,
+      password: c.password,
+    })),
+    players: cfg.players.map((p) => ({
+      name: p.name,
+      username: p.username,
+      password: p.password,
+    })),
+  });
+});
+
 app.post('/api/admin/start-round', authMiddleware, (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: '仅管理员可操作' });
   try {
@@ -110,9 +148,9 @@ app.post('/api/admin/reload-config', authMiddleware, (req, res) => {
 });
 
 app.post('/api/draft/begin', authMiddleware, (req, res) => {
-  if (req.user.role !== 'captain') return res.status(403).json({ error: '仅队长可操作' });
+  assertDraftActor(req.user);
   try {
-    beginDraw(req.user.captainId);
+    beginDraw(resolveCaptainIdForDraft(req.user));
     broadcastState();
     res.json({ ok: true });
   } catch (e) {
@@ -121,9 +159,9 @@ app.post('/api/draft/begin', authMiddleware, (req, res) => {
 });
 
 app.post('/api/draft/select', authMiddleware, (req, res) => {
-  if (req.user.role !== 'captain') return res.status(403).json({ error: '仅队长可操作' });
+  assertDraftActor(req.user);
   try {
-    selectCard(req.user.captainId, req.body.playerId);
+    selectCard(resolveCaptainIdForDraft(req.user), req.body.playerId);
     broadcastState();
     res.json({ ok: true });
   } catch (e) {
@@ -132,9 +170,9 @@ app.post('/api/draft/select', authMiddleware, (req, res) => {
 });
 
 app.post('/api/draft/reroll', authMiddleware, (req, res) => {
-  if (req.user.role !== 'captain') return res.status(403).json({ error: '仅队长可操作' });
+  assertDraftActor(req.user);
   try {
-    rerollCard(req.user.captainId, req.body.playerId);
+    rerollCard(resolveCaptainIdForDraft(req.user), req.body.playerId);
     broadcastState();
     res.json({ ok: true });
   } catch (e) {
@@ -143,9 +181,9 @@ app.post('/api/draft/reroll', authMiddleware, (req, res) => {
 });
 
 app.post('/api/draft/accept', authMiddleware, (req, res) => {
-  if (req.user.role !== 'captain') return res.status(403).json({ error: '仅队长可操作' });
+  assertDraftActor(req.user);
   try {
-    acceptDraw(req.user.captainId);
+    acceptDraw(resolveCaptainIdForDraft(req.user));
     broadcastState();
     res.json({ ok: true });
   } catch (e) {
@@ -154,9 +192,9 @@ app.post('/api/draft/accept', authMiddleware, (req, res) => {
 });
 
 app.post('/api/draft/reject', authMiddleware, (req, res) => {
-  if (req.user.role !== 'captain') return res.status(403).json({ error: '仅队长可操作' });
+  assertDraftActor(req.user);
   try {
-    rejectDraw(req.user.captainId);
+    rejectDraw(resolveCaptainIdForDraft(req.user));
     broadcastState();
     res.json({ ok: true });
   } catch (e) {

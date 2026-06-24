@@ -4,6 +4,7 @@ import LoginPage from './components/LoginPage';
 import AdminPanel from './components/AdminPanel';
 import DraftArea from './components/DraftArea';
 import TeamBoard from './components/TeamBoard';
+import PlayerView from './components/PlayerView';
 import PlayerPool from './components/PlayerPool';
 
 const API = '';
@@ -119,7 +120,9 @@ export default function App() {
           </span>
           <span>
             <strong>{auth.user.name}</strong>
-            {auth.user.role === 'admin' ? '（管理员）' : '（队长）'}
+            {auth.user.role === 'admin' && '（管理员）'}
+            {auth.user.role === 'captain' && '（队长）'}
+            {auth.user.role === 'player' && '（队员）'}
           </span>
           <button className="btn-secondary" onClick={handleLogout}>
             退出
@@ -153,15 +156,19 @@ export default function App() {
           )}
 
           <div className="grid-2" style={{ marginBottom: 20 }}>
-            <DraftArea
-              state={state}
-              user={auth.user}
-              onBegin={() => draftAction('/api/draft/begin')}
-              onSelect={(playerId) => draftAction('/api/draft/select', { playerId })}
-              onReroll={(playerId) => draftAction('/api/draft/reroll', { playerId })}
-              onAccept={() => draftAction('/api/draft/accept')}
-              onReject={() => draftAction('/api/draft/reject')}
-            />
+            {auth.user.role === 'player' ? (
+              <PlayerView state={state} user={auth.user} />
+            ) : (
+              <DraftArea
+                state={state}
+                user={auth.user}
+                onBegin={() => draftAction('/api/draft/begin')}
+                onSelect={(playerId) => draftAction('/api/draft/select', { playerId })}
+                onReroll={(playerId) => draftAction('/api/draft/reroll', { playerId })}
+                onAccept={() => draftAction('/api/draft/accept')}
+                onReject={() => draftAction('/api/draft/reject')}
+              />
+            )}
             <TeamBoard state={state} />
           </div>
 

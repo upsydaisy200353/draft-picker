@@ -11,9 +11,16 @@ export default function DraftArea({
 }) {
   const [selectedId, setSelectedId] = useState(null);
   const isCaptain = user.role === 'captain';
+  const isAdmin = user.role === 'admin';
   const isMyTurn = state.isMyTurn;
   const turn = state.turn;
   const round = state.round;
+
+  const adminBanner = isAdmin && state.adminDrafting && (
+    <p className="hint admin-draft-banner">
+      管理员代抽 · 当前队长：<strong>{state.currentCaptain?.name}</strong>
+    </p>
+  );
 
   if (state.status === 'idle') {
     return (
@@ -71,38 +78,23 @@ export default function DraftArea({
     );
   }
 
-  if (!isMyTurn && user.role === 'admin') {
+  if (!isMyTurn && isAdmin) {
     return (
       <div className="panel">
-        <div className="draft-area">
-          <h2>观战模式</h2>
-          <p className="hint">
-            当前 <strong>{state.currentCaptain?.name}</strong> 正在抽卡
-          </p>
-          {turn?.phase === 'selecting' && turn.drawnCards?.length > 0 && (
-            <div className="card-row">
-              {turn.drawnCards.map((p) => (
-                <div key={p.id} className="player-card disabled">{p.name}</div>
-              ))}
-            </div>
-          )}
-          {turn?.phase === 'confirming' && turn.currentDraw && (
-            <div className="card-row">
-              <div className="player-card large disabled">{turn.currentDraw.name}</div>
-            </div>
-          )}
-          {!turn && <p className="hint">等待队长点击抽卡</p>}
+        <div className="waiting-msg">
+          <div className="big">等待抽卡开始</div>
+          <p>当前未在抽卡阶段，或暂无轮到的队长</p>
         </div>
       </div>
     );
   }
 
-  // My turn - captain drafting
   if (!turn) {
     return (
       <div className="panel">
         <div className="draft-area">
-          <h2>轮到你了！</h2>
+          <h2>{isAdmin ? '代队长抽卡' : '轮到你了！'}</h2>
+          {adminBanner}
           <p className="hint">
             {round === 1
               ? '点击抽卡，将从池中获得 3 位选手，选择 1 位加入队伍（可重抽 1 张）'
@@ -120,7 +112,8 @@ export default function DraftArea({
     return (
       <div className="panel">
         <div className="draft-area">
-          <h2>选择一名选手</h2>
+          <h2>{isAdmin ? '代选选手' : '选择一名选手'}</h2>
+          {adminBanner}
           <p className="hint">
             {turn.rerollUsed ? '重抽机会已用完' : '你可以重抽其中一张卡牌（仅一次）'}
           </p>
@@ -161,6 +154,7 @@ export default function DraftArea({
       <div className="panel">
         <div className="draft-area">
           <h2>抽到了</h2>
+          {adminBanner}
           <div className="card-row">
             <div className="player-card large">{turn.currentDraw.name}</div>
           </div>

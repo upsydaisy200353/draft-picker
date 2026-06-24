@@ -107,6 +107,8 @@ def main():
         players.append({
             'id': f'p{i}',
             'name': p['display'],
+            'username': f'player{i}',
+            'password': f'mp{i:02d}',
             'game_id': p['game_id'],
             'skill': p['skill'],
         })
