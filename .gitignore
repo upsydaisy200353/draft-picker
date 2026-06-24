@@ -1,0 +1,9 @@
+node_modules/
+data/state.json
+dist/
+client/dist/
+.env
+*.log
+deploy-check.txt
+scripts/xlsx_meta.txt
+scripts/xlsx_preview.txt

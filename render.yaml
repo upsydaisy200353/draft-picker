@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: draft-picker
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm install && cd client && npm install && cd .. && npm run build
+    startCommand: node server/index.js
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: 20.11.0
+      - key: JWT_SECRET
+        generateValue: true

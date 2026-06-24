@@ -1,0 +1,8 @@
+services:
+  draft-picker:
+    build: .
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped

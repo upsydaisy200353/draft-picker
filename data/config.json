@@ -1,0 +1,207 @@
+{
+  "admin": {
+    "username": "admin",
+    "password": "admin123"
+  },
+  "event": "白菜杯S46海斗杯",
+  "captain_rule": "报名表行标蓝为队长",
+  "captains": [
+    {
+      "id": "c1",
+      "name": "全能杀人王",
+      "username": "captain1",
+      "password": "hd01",
+      "strength": 1,
+      "skill": "能送",
+      "game_id": "心外最烧的O#49893"
+    },
+    {
+      "id": "c2",
+      "name": "王姐",
+      "username": "captain2",
+      "password": "hd02",
+      "strength": 2,
+      "skill": "能送",
+      "game_id": "可以回归基本功#28658"
+    },
+    {
+      "id": "c3",
+      "name": "佛系",
+      "username": "captain3",
+      "password": "hd03",
+      "strength": 3,
+      "skill": "能C能送",
+      "game_id": "佛系"
+    },
+    {
+      "id": "c4",
+      "name": "暧昧",
+      "username": "captain4",
+      "password": "hd04",
+      "strength": 4,
+      "skill": "能C能送",
+      "game_id": "可以爱昧#14541"
+    },
+    {
+      "id": "c5",
+      "name": "TX-ff104 Alyzeus",
+      "username": "captain5",
+      "password": "hd05",
+      "strength": 5,
+      "skill": "一打九",
+      "game_id": "三冠小偷"
+    }
+  ],
+  "players": [
+    {
+      "id": "p1",
+      "name": "Ramin",
+      "game_id": "TYS花花#70819",
+      "skill": "能C能送"
+    },
+    {
+      "id": "p2",
+      "name": "好运耶耶",
+      "game_id": "獨吾與愛不和#80477",
+      "skill": "能送"
+    },
+    {
+      "id": "p3",
+      "name": "坚哥",
+      "game_id": "向你的女王低头丶#52788",
+      "skill": "能C能送"
+    },
+    {
+      "id": "p4",
+      "name": "牌",
+      "game_id": "晨露轻轻#72577",
+      "skill": "能送"
+    },
+    {
+      "id": "p5",
+      "name": "李相赫",
+      "game_id": "李相赫#35855",
+      "skill": "能送"
+    },
+    {
+      "id": "p6",
+      "name": "心之钢大王",
+      "game_id": "日会落#82969",
+      "skill": "能躺"
+    },
+    {
+      "id": "p7",
+      "name": "ud大王",
+      "game_id": "可以uder#23345",
+      "skill": "lgd.shaoye说带我比打jackeylove都累"
+    },
+    {
+      "id": "p8",
+      "name": "衍衍衍珏",
+      "game_id": "可以超市#73084",
+      "skill": "能送"
+    },
+    {
+      "id": "p9",
+      "name": "crazy",
+      "game_id": "可以Crazy#31442",
+      "skill": "能躺"
+    },
+    {
+      "id": "p10",
+      "name": "ttxeb",
+      "game_id": "可以幸运#28759",
+      "skill": "能躺"
+    },
+    {
+      "id": "p11",
+      "name": "根本吃不胖啊",
+      "game_id": "乞力马扎罗的马喽",
+      "skill": "能送"
+    },
+    {
+      "id": "p12",
+      "name": "片",
+      "game_id": "可以惡魔",
+      "skill": "能送"
+    },
+    {
+      "id": "p13",
+      "name": "cola",
+      "game_id": "ColaStorm#37571",
+      "skill": "能C能送"
+    },
+    {
+      "id": "p14",
+      "name": "baozi",
+      "game_id": "锦木千束#35679",
+      "skill": "能躺"
+    },
+    {
+      "id": "p15",
+      "name": "雪乃",
+      "game_id": "EDG荡厂胖驼妹#11622",
+      "skill": "能C能送"
+    },
+    {
+      "id": "p16",
+      "name": "本圣",
+      "game_id": "急坏了吧你#93246",
+      "skill": "包C"
+    },
+    {
+      "id": "p17",
+      "name": "七元",
+      "game_id": "七元y#62454",
+      "skill": "能躺"
+    },
+    {
+      "id": "p18",
+      "name": "🍄",
+      "game_id": "可以糕菇#78115",
+      "skill": "能送"
+    },
+    {
+      "id": "p19",
+      "name": "帅哥",
+      "game_id": "Die4u#95534",
+      "skill": "能C能送"
+    },
+    {
+      "id": "p20",
+      "name": "单局非心加海泪的小老头",
+      "game_id": "BLG招青训08#0520",
+      "skill": "能送"
+    },
+    {
+      "id": "p21",
+      "name": "安捣",
+      "game_id": "可以狗#95627",
+      "skill": "能送"
+    },
+    {
+      "id": "p22",
+      "name": "源神",
+      "game_id": "白惟一#23577",
+      "skill": "能送"
+    },
+    {
+      "id": "p23",
+      "name": "汤圆",
+      "game_id": "雨中漫步#18450",
+      "skill": "能送"
+    },
+    {
+      "id": "p24",
+      "name": "教头",
+      "game_id": "喵喵喵世界真奇妙#91206",
+      "skill": "能躺"
+    },
+    {
+      "id": "p25",
+      "name": "光之巨人",
+      "game_id": "",
+      "skill": "能送"
+    }
+  ]
+}
