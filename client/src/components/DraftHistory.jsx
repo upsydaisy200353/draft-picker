@@ -10,12 +10,21 @@ function formatTime(iso) {
 function noteText(entry) {
   if (entry.auto) return '系统自动';
   if (entry.round === 1 && entry.drawnOptions?.length) return '三选一';
-  if (entry.rejectSwap) return '拒绝重抽';
+  const swaps = entry.rejectSwaps ?? (entry.rejectSwap ? [entry.rejectSwap] : []);
+  if (swaps.length > 0) return '拒绝重抽';
   return '';
+}
+
+function swapChain(swaps) {
+  if (!swaps?.length) return null;
+  return swaps.map((s) => `${s.from.name}→${s.to.name}`).join('，');
 }
 
 function HistoryDetail({ entry }) {
   if (entry.auto) return null;
+
+  const rerollSwaps = entry.rerollSwaps ?? (entry.rerollSwap ? [entry.rerollSwap] : []);
+  const rejectSwaps = entry.rejectSwaps ?? (entry.rejectSwap ? [entry.rejectSwap] : []);
 
   if (entry.round === 1 && entry.drawnOptions?.length) {
     return (
@@ -29,22 +38,22 @@ function HistoryDetail({ entry }) {
             {i < entry.drawnOptions.length - 1 ? '、' : ''}
           </span>
         ))}
-        {entry.rerollSwap && (
+        {rerollSwaps.length > 0 && (
           <span className="history-swap">
-            {' '}· 重抽 {entry.rerollSwap.from.name} → {entry.rerollSwap.to.name}
+            {' '}· 重抽 {swapChain(rerollSwaps)}
           </span>
         )}
       </div>
     );
   }
 
-  if (entry.rejectSwap) {
+  if (rejectSwaps.length > 0) {
     return (
       <div className="history-detail">
         <span className="history-detail-label">过程：</span>
-        先抽 <span className="history-option">{entry.rejectSwap.from.name}</span>
+        拒绝重抽 {swapChain(rejectSwaps)}
         {' → '}
-        拒绝后换为 <span className="history-pick">{entry.rejectSwap.to.name}</span>
+        收下 <span className="history-pick">{entry.playerName}</span>
       </div>
     );
   }

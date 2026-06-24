@@ -61,7 +61,7 @@ function createInitialState() {
     teams,
     turn: null,
     history: [],
-    captainRejectUsed: {},
+    captainRejectCount: {},
   };
 }
 
@@ -79,7 +79,15 @@ export function loadState() {
         state.teams[LEFTOVER_TEAM_ID] = [];
       }
       if (!state.history) state.history = [];
-      if (!state.captainRejectUsed) state.captainRejectUsed = {};
+      if (!state.captainRejectCount) {
+        state.captainRejectCount = {};
+        if (state.captainRejectUsed) {
+          for (const [id, used] of Object.entries(state.captainRejectUsed)) {
+            if (used) state.captainRejectCount[id] = 1;
+          }
+          delete state.captainRejectUsed;
+        }
+      }
       return state;
     } catch {
       state = createInitialState();
@@ -200,16 +208,26 @@ export function recordLeftoverPicks(playerIds) {
   }
 }
 
+export function getDraftRules() {
+  const cfg = getConfig();
+  return {
+    r1MaxRerolls: cfg.draft_rules?.r1_max_rerolls ?? 2,
+    r2r4MaxRejects: cfg.draft_rules?.r2r4_max_rejects ?? 2,
+  };
+}
+
 export function getPublicState(forUser = null) {
   const cfg = getConfig();
   const s = getState();
   const currentCaptainId = s.captainOrder[s.currentIndex] ?? null;
   const currentCaptain = currentCaptainId ? getCaptainById(currentCaptainId) : null;
 
-  const captainRejectUsed =
+  const { r1MaxRerolls, r2r4MaxRejects } = getDraftRules();
+  const captainRejectCount =
     currentCaptainId && s.round >= 2
-      ? (s.captainRejectUsed?.[currentCaptainId] ?? false)
-      : false;
+      ? (s.captainRejectCount?.[currentCaptainId] ?? 0)
+      : 0;
+  const rejectRemaining = Math.max(0, r2r4MaxRejects - captainRejectCount);
 
   const turn = s.turn
     ? {
@@ -218,8 +236,9 @@ export function getPublicState(forUser = null) {
         currentDraw: s.turn.currentDraw
           ? { id: s.turn.currentDraw.id, name: s.turn.currentDraw.name }
           : null,
-        rerollUsed: s.turn.rerollUsed ?? false,
-        rejectUsed: s.round === 1 ? false : captainRejectUsed,
+        rerollCount: s.turn.rerollCount ?? 0,
+        rerollRemaining: Math.max(0, r1MaxRerolls - (s.turn.rerollCount ?? 0)),
+        rejectRemaining: s.round >= 2 ? rejectRemaining : r2r4MaxRejects,
       }
     : null;
 
@@ -246,14 +265,17 @@ export function getPublicState(forUser = null) {
     };
   }
 
-  const myRejectUsedR2R4 =
-    forUser?.role === 'captain' ? (s.captainRejectUsed?.[forUser.captainId] ?? false) : false;
+  const myRejectCountR2R4 =
+    forUser?.role === 'captain' ? (s.captainRejectCount?.[forUser.captainId] ?? 0) : 0;
+  const myRejectRemainingR2R4 = Math.max(0, r2r4MaxRejects - myRejectCountR2R4);
 
   return {
     round: s.round,
     status: s.status,
     nextRound,
-    myRejectUsedR2R4,
+    draftRules: { r1MaxRerolls, r2r4MaxRejects },
+    myRejectCountR2R4,
+    myRejectRemainingR2R4,
     captainOrder: s.captainOrder.map((id) => {
       const c = getCaptainById(id);
       return c ? { id: c.id, name: c.name, strength: c.strength } : { id };
@@ -325,8 +347,8 @@ export function getPublicState(forUser = null) {
       rejected: h.rejected ?? false,
       auto: h.auto ?? false,
       drawnOptions: h.drawnOptions ?? null,
-      rerollSwap: h.rerollSwap ?? null,
-      rejectSwap: h.rejectSwap ?? null,
+      rerollSwaps: h.rerollSwaps ?? (h.rerollSwap ? [h.rerollSwap] : null),
+      rejectSwaps: h.rejectSwaps ?? (h.rejectSwap ? [h.rejectSwap] : null),
     })),
   };
 }

@@ -4,16 +4,20 @@
     "password": "admin123"
   },
   "event": "白菜杯S46海斗杯",
-  "captain_rule": "报名表行标蓝为队长",
+  "captain_rule": "明月、王姐、佛系、张神、暧昧为队长",
+  "draft_rules": {
+    "r1_max_rerolls": 2,
+    "r2r4_max_rejects": 2
+  },
   "captains": [
     {
       "id": "c1",
-      "name": "全能杀人王",
+      "name": "明月",
       "username": "captain1",
       "password": "hd01",
       "strength": 1,
-      "skill": "能送",
-      "game_id": "心外最烧的O#49893"
+      "skill": "",
+      "game_id": ""
     },
     {
       "id": "c2",
@@ -35,29 +39,29 @@
     },
     {
       "id": "c4",
-      "name": "暧昧",
+      "name": "张神",
       "username": "captain4",
       "password": "hd04",
       "strength": 4,
-      "skill": "能C能送",
-      "game_id": "可以爱昧#14541"
+      "skill": "",
+      "game_id": ""
     },
     {
       "id": "c5",
-      "name": "TX-ff104 Alyzeus",
+      "name": "暧昧",
       "username": "captain5",
       "password": "hd05",
       "strength": 5,
-      "skill": "一打九",
-      "game_id": "三冠小偷"
+      "skill": "能C能送",
+      "game_id": "可以爱昧#14541"
     }
   ],
   "players": [
     {
       "id": "p1",
-      "name": "Ramin",
+      "name": "花花",
       "game_id": "TYS花花#70819",
-      "skill": "能C能送",
+      "skill": "",
       "username": "player1",
       "password": "mp01"
     },
@@ -79,7 +83,7 @@
     },
     {
       "id": "p4",
-      "name": "牌",
+      "name": "打牌",
       "game_id": "晨露轻轻#72577",
       "skill": "能送",
       "username": "player4",
@@ -95,7 +99,7 @@
     },
     {
       "id": "p6",
-      "name": "心之钢大王",
+      "name": "日会落",
       "game_id": "日会落#82969",
       "skill": "能躺",
       "username": "player6",
@@ -105,7 +109,7 @@
       "id": "p7",
       "name": "ud大王",
       "game_id": "可以uder#23345",
-      "skill": "lgd.shaoye说带我比打jackeylove都累",
+      "skill": "",
       "username": "player7",
       "password": "mp07"
     },
@@ -127,7 +131,7 @@
     },
     {
       "id": "p10",
-      "name": "ttxeb",
+      "name": "天天小恶霸",
       "game_id": "可以幸运#28759",
       "skill": "能躺",
       "username": "player10",
@@ -175,7 +179,7 @@
     },
     {
       "id": "p16",
-      "name": "本圣",
+      "name": "本子",
       "game_id": "急坏了吧你#93246",
       "skill": "包C",
       "username": "player16",
@@ -191,7 +195,7 @@
     },
     {
       "id": "p18",
-      "name": "🍄",
+      "name": "香菇",
       "game_id": "可以糕菇#78115",
       "skill": "能送",
       "username": "player18",
@@ -199,7 +203,7 @@
     },
     {
       "id": "p19",
-      "name": "帅哥",
+      "name": "d4u",
       "game_id": "Die4u#95534",
       "skill": "能C能送",
       "username": "player19",
@@ -207,7 +211,7 @@
     },
     {
       "id": "p20",
-      "name": "单局非心加海泪的小老头",
+      "name": "情景模式",
       "game_id": "BLG招青训08#0520",
       "skill": "能送",
       "username": "player20",
@@ -247,7 +251,7 @@
     },
     {
       "id": "p25",
-      "name": "光之巨人",
+      "name": "光之巨人（霸哥）",
       "game_id": "",
       "skill": "能送",
       "username": "player25",

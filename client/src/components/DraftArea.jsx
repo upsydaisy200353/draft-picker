@@ -15,15 +15,20 @@ export default function DraftArea({
   const isMyTurn = state.isMyTurn;
   const turn = state.turn;
   const round = state.round;
+  const r1Max = state.draftRules?.r1MaxRerolls ?? 2;
+  const r2r4Max = state.draftRules?.r2r4MaxRejects ?? 2;
+
+  const rejectRemaining =
+    turn?.rejectRemaining ??
+    (user.role === 'captain' ? state.myRejectRemainingR2R4 : r2r4Max);
+
+  const rerollRemaining = turn?.rerollRemaining ?? r1Max;
 
   const adminBanner = isAdmin && state.adminDrafting && (
     <p className="hint admin-draft-banner">
       管理员代抽 · 当前队长：<strong>{state.currentCaptain?.name}</strong>
     </p>
   );
-
-  const rejectUsedR2R4 =
-    turn?.rejectUsed ?? (user.role === 'captain' ? state.myRejectUsedR2R4 : false);
 
   if (state.status === 'idle') {
     return (
@@ -100,10 +105,10 @@ export default function DraftArea({
           {adminBanner}
           <p className="hint">
             {round === 1
-              ? '点击抽卡，将从池中获得 3 位选手，选择 1 位加入队伍（可重抽 1 张）'
-              : rejectUsedR2R4
-                ? '点击抽卡，将从池中随机获得 1 位选手（你的 R2-R4 拒绝机会已用完）'
-                : '点击抽卡，将从池中随机获得 1 位选手（R2-R4 合计可拒绝重抽 1 次）'}
+              ? `点击抽卡，将从池中获得 3 位选手，选择 1 位加入队伍（可重抽 ${r1Max} 张）`
+              : rejectRemaining <= 0
+                ? `点击抽卡，将从池中随机获得 1 位选手（你的 R2-R4 拒绝机会已用完）`
+                : `点击抽卡，将从池中随机获得 1 位选手（R2-R4 合计还可拒绝 ${rejectRemaining} 次）`}
           </p>
           <button className="btn-primary" onClick={onBegin} style={{ padding: '14px 32px', fontSize: 16 }}>
             抽卡
@@ -120,7 +125,9 @@ export default function DraftArea({
           <h2>{isAdmin ? '代选选手' : '选择一名选手'}</h2>
           {adminBanner}
           <p className="hint">
-            {turn.rerollUsed ? '重抽机会已用完' : '你可以重抽其中一张卡牌（仅一次）'}
+            {rerollRemaining <= 0
+              ? '重抽机会已用完'
+              : `你还可以重抽 ${rerollRemaining} 张卡牌`}
           </p>
           <div className="card-row">
             {turn.drawnCards.map((p) => (
@@ -143,7 +150,7 @@ export default function DraftArea({
             </button>
             <button
               className="btn-warning"
-              disabled={turn.rerollUsed || !selectedId}
+              disabled={rerollRemaining <= 0 || !selectedId}
               onClick={() => onReroll(selectedId)}
             >
               重抽此卡
@@ -164,15 +171,15 @@ export default function DraftArea({
             <div className="player-card large">{turn.currentDraw.name}</div>
           </div>
           <p className="hint">
-            {rejectUsedR2R4
+            {rejectRemaining <= 0
               ? 'R2-R4 拒绝机会已用完，请确认收下'
-              : '你可以拒绝一次并重新抽取（R2-R4 合计仅此 1 次）'}
+              : `你还可以拒绝并重抽 ${rejectRemaining} 次（R2-R4 合计最多 ${r2r4Max} 次）`}
           </p>
           <div className="action-row">
             <button className="btn-primary" onClick={onAccept}>
               确认收下
             </button>
-            <button className="btn-warning" disabled={rejectUsedR2R4} onClick={onReject}>
+            <button className="btn-warning" disabled={rejectRemaining <= 0} onClick={onReject}>
               拒绝并重抽
             </button>
           </div>

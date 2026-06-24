@@ -5,6 +5,7 @@ import {
   getPublicState,
   initState,
   getConfig,
+  getDraftRules,
   LEFTOVER_TEAM_ID,
   recordPick,
   recordLeftoverPicks,
@@ -101,7 +102,8 @@ export function beginDraw(captainId) {
       st.turn = {
         phase: 'selecting',
         drawnCards: cards,
-        rerollUsed: false,
+        rerollCount: 0,
+        rerollSwaps: [],
       };
     });
   } else {
@@ -111,6 +113,7 @@ export function beginDraw(captainId) {
       st.turn = {
         phase: 'confirming',
         currentDraw: card[0],
+        rejectSwaps: [],
       };
     });
   }
@@ -126,22 +129,24 @@ export function selectCard(captainId, playerId) {
   const valid = s.turn.drawnCards.some((p) => p.id === playerId);
   if (!valid) throw new Error('只能选择本次抽到的卡牌');
 
-  const rerolled = s.turn.rerollUsed ?? false;
   pickPlayer(captainId, playerId);
   recordPick(captainId, playerId, {
-    rerolled,
+    rerolled: (s.turn.rerollCount ?? 0) > 0,
     drawnOptions: s.turn.drawnCards.map((p) => ({ id: p.id, name: p.name })),
-    rerollSwap: s.turn.rerollSwap ?? null,
+    rerollSwaps: s.turn.rerollSwaps ?? [],
   });
   finishCaptainTurn();
   return getPublicState();
 }
 
 export function rerollCard(captainId, playerId) {
+  const { r1MaxRerolls } = getDraftRules();
   const s = assertCurrentCaptain(captainId);
   if (s.round !== 1) throw new Error('仅第一轮可以重抽');
   if (!s.turn || s.turn.phase !== 'selecting') throw new Error('请先抽卡');
-  if (s.turn.rerollUsed) throw new Error('本轮重抽机会已用完');
+  if ((s.turn.rerollCount ?? 0) >= r1MaxRerolls) {
+    throw new Error(`本轮重抽机会已用完（最多 ${r1MaxRerolls} 次）`);
+  }
 
   const idx = s.turn.drawnCards.findIndex((p) => p.id === playerId);
   if (idx === -1) throw new Error('只能重抽本次抽到的卡牌');
@@ -154,11 +159,12 @@ export function rerollCard(captainId, playerId) {
 
   updateState((st) => {
     st.turn.drawnCards[idx] = replacement;
-    st.turn.rerollUsed = true;
-    st.turn.rerollSwap = {
+    st.turn.rerollCount = (st.turn.rerollCount ?? 0) + 1;
+    if (!st.turn.rerollSwaps) st.turn.rerollSwaps = [];
+    st.turn.rerollSwaps.push({
       from: { id: oldCard.id, name: oldCard.name },
       to: { id: replacement.id, name: replacement.name },
-    };
+    });
   });
 
   return getPublicState();
@@ -170,21 +176,26 @@ export function acceptDraw(captainId) {
   if (!s.turn || s.turn.phase !== 'confirming') throw new Error('请先抽卡');
   if (!s.turn.currentDraw) throw new Error('没有待确认的卡牌');
 
-  const rejected = s.turn.rejectedThisPick ?? false;
+  const rejectSwaps = s.turn.rejectSwaps ?? [];
   pickPlayer(captainId, s.turn.currentDraw.id);
   recordPick(captainId, s.turn.currentDraw.id, {
-    rejected,
-    rejectSwap: s.turn.rejectSwap ?? null,
+    rejected: rejectSwaps.length > 0,
+    rejectSwaps,
   });
   finishCaptainTurn();
   return getPublicState();
 }
 
 export function rejectDraw(captainId) {
+  const { r2r4MaxRejects } = getDraftRules();
   const s = assertCurrentCaptain(captainId);
   if (s.round === 1) throw new Error('第一轮不能拒绝');
   if (!s.turn || s.turn.phase !== 'confirming') throw new Error('请先抽卡');
-  if (s.captainRejectUsed?.[captainId]) throw new Error('R2-R4 拒绝机会已用完');
+
+  const used = s.captainRejectCount?.[captainId] ?? 0;
+  if (used >= r2r4MaxRejects) {
+    throw new Error(`R2-R4 拒绝机会已用完（最多 ${r2r4MaxRejects} 次）`);
+  }
 
   const exclude = new Set([s.turn.currentDraw.id]);
   const available = drawRandom(getState().availablePlayerIds.length) ?? [];
@@ -192,14 +203,14 @@ export function rejectDraw(captainId) {
   if (!replacement) throw new Error('卡池选手不足');
 
   updateState((st) => {
-    if (!st.captainRejectUsed) st.captainRejectUsed = {};
-    st.captainRejectUsed[captainId] = true;
-    st.turn.rejectSwap = {
+    if (!st.captainRejectCount) st.captainRejectCount = {};
+    st.captainRejectCount[captainId] = (st.captainRejectCount[captainId] ?? 0) + 1;
+    if (!st.turn.rejectSwaps) st.turn.rejectSwaps = [];
+    st.turn.rejectSwaps.push({
       from: { id: s.turn.currentDraw.id, name: s.turn.currentDraw.name },
       to: { id: replacement.id, name: replacement.name },
-    };
+    });
     st.turn.currentDraw = replacement;
-    st.turn.rejectedThisPick = true;
   });
 
   return getPublicState();
