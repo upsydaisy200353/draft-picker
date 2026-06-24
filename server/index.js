@@ -128,8 +128,8 @@ app.get('/api/admin/accounts', authMiddleware, (req, res) => {
 app.post('/api/admin/start-round', authMiddleware, (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: '仅管理员可操作' });
   try {
-    const { round, captainOrder } = req.body;
-    startRound(round, captainOrder);
+    const { captainOrder } = req.body;
+    startRound(captainOrder);
     broadcastState();
     res.json({ ok: true });
   } catch (e) {

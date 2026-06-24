@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 
 export default function AdminPanel({ state, api, onError }) {
-  const [round, setRound] = useState(1);
   const [order, setOrder] = useState([]);
   const [loading, setLoading] = useState(false);
   const [accounts, setAccounts] = useState(null);
+
+  const nextRound = state.nextRound;
 
   useEffect(() => {
     if (state.captains?.length && order.length === 0) {
@@ -51,7 +52,7 @@ export default function AdminPanel({ state, api, onError }) {
     try {
       await api('/api/admin/start-round', {
         method: 'POST',
-        body: JSON.stringify({ round, captainOrder: order }),
+        body: JSON.stringify({ captainOrder: order }),
       });
     } catch (e) {
       onError(e.message);
@@ -93,17 +94,20 @@ export default function AdminPanel({ state, api, onError }) {
       <h2>管理员控制台</h2>
 
       <div className="admin-section">
-        <h3>选择轮次</h3>
+        <h3>轮次进度</h3>
+        <p style={{ fontSize: 14, color: 'var(--muted)', marginBottom: 8 }}>
+          固定顺序：R1 → R2 → R3 → R4，不可跳轮
+        </p>
         <div className="round-select">
           {[1, 2, 3, 4].map((r) => (
-            <button
+            <span
               key={r}
-              className={`round-btn ${round === r ? 'active' : ''}`}
-              onClick={() => setRound(r)}
-              disabled={state.status === 'drafting'}
+              className={`round-btn ${state.round === r && state.status === 'drafting' ? 'active' : ''} ${state.round > r || state.status === 'complete' ? 'done' : ''}`}
+              style={{ cursor: 'default', pointerEvents: 'none' }}
             >
               R{r}
-            </button>
+              {state.round > r || (state.status === 'complete' && r <= 4) ? ' ✓' : ''}
+            </span>
           ))}
         </div>
       </div>
@@ -141,9 +145,13 @@ export default function AdminPanel({ state, api, onError }) {
         <button
           className="btn-primary"
           onClick={startRound}
-          disabled={loading || state.status === 'drafting' || state.status === 'complete' || order.length === 0}
+          disabled={loading || !nextRound || state.status === 'drafting' || order.length === 0}
         >
-          {state.status === 'round_complete' ? `开始第 ${round} 轮` : state.status === 'idle' ? `开始第 ${round} 轮` : '抽卡进行中...'}
+          {state.status === 'drafting'
+            ? `第 ${state.round} 轮抽卡进行中...`
+            : nextRound
+              ? `开始第 ${nextRound} 轮`
+              : '全部完成'}
         </button>
         <button className="btn-danger" onClick={resetDraft} disabled={loading}>
           重置抽卡
@@ -153,9 +161,9 @@ export default function AdminPanel({ state, api, onError }) {
         </button>
       </div>
 
-      {state.status === 'round_complete' && (
+      {state.status === 'round_complete' && nextRound && (
         <p style={{ marginTop: 12, fontSize: 13, color: 'var(--warning)' }}>
-          第 {state.round} 轮已完成，请设置下一轮顺序后点击开始。
+          第 {state.round} 轮已完成，请设置第 {nextRound} 轮顺序后点击开始。
         </p>
       )}
 

@@ -60,19 +60,30 @@ function pickPlayer(captainId, playerId) {
   });
 }
 
-export function startRound(round, captainOrder) {
-  if (![1, 2, 3, 4].includes(round)) throw new Error('轮次必须是 1-4');
+export function startRound(captainOrder) {
   if (!captainOrder?.length) throw new Error('请设置队长顺序');
 
   const ids = new Set(captainOrder);
   if (ids.size !== captainOrder.length) throw new Error('队长顺序不能有重复');
 
-  updateState((s) => {
-    s.round = round;
-    s.captainOrder = [...captainOrder];
-    s.currentIndex = 0;
-    s.status = 'drafting';
-    s.turn = null;
+  const s = getState();
+  let round;
+  if (s.status === 'idle' && s.round === 0) {
+    round = 1;
+  } else if (s.status === 'round_complete' && s.round < 4) {
+    round = s.round + 1;
+  } else if (s.status === 'complete') {
+    throw new Error('全部四轮已完成');
+  } else {
+    throw new Error('当前无法开始新一轮');
+  }
+
+  updateState((st) => {
+    st.round = round;
+    st.captainOrder = [...captainOrder];
+    st.currentIndex = 0;
+    st.status = 'drafting';
+    st.turn = null;
   });
 
   return getPublicState();
@@ -100,7 +111,6 @@ export function beginDraw(captainId) {
       st.turn = {
         phase: 'confirming',
         currentDraw: card[0],
-        rejectUsed: false,
       };
     });
   }
@@ -151,7 +161,7 @@ export function acceptDraw(captainId) {
   if (!s.turn || s.turn.phase !== 'confirming') throw new Error('请先抽卡');
   if (!s.turn.currentDraw) throw new Error('没有待确认的卡牌');
 
-  const rejected = s.turn.rejectUsed ?? false;
+  const rejected = s.turn.rejectedThisPick ?? false;
   pickPlayer(captainId, s.turn.currentDraw.id);
   recordPick(captainId, s.turn.currentDraw.id, { rejected });
   finishCaptainTurn();
@@ -162,7 +172,7 @@ export function rejectDraw(captainId) {
   const s = assertCurrentCaptain(captainId);
   if (s.round === 1) throw new Error('第一轮不能拒绝');
   if (!s.turn || s.turn.phase !== 'confirming') throw new Error('请先抽卡');
-  if (s.turn.rejectUsed) throw new Error('本轮拒绝机会已用完');
+  if (s.captainRejectUsed?.[captainId]) throw new Error('R2-R4 拒绝机会已用完');
 
   const exclude = new Set([s.turn.currentDraw.id]);
   const available = drawRandom(getState().availablePlayerIds.length) ?? [];
@@ -170,8 +180,10 @@ export function rejectDraw(captainId) {
   if (!replacement) throw new Error('卡池选手不足');
 
   updateState((st) => {
+    if (!st.captainRejectUsed) st.captainRejectUsed = {};
+    st.captainRejectUsed[captainId] = true;
     st.turn.currentDraw = replacement;
-    st.turn.rejectUsed = true;
+    st.turn.rejectedThisPick = true;
   });
 
   return getPublicState();

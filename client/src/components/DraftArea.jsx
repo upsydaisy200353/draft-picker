@@ -22,6 +22,9 @@ export default function DraftArea({
     </p>
   );
 
+  const rejectUsedR2R4 =
+    turn?.rejectUsed ?? (user.role === 'captain' ? state.myRejectUsedR2R4 : false);
+
   if (state.status === 'idle') {
     return (
       <div className="panel">
@@ -98,7 +101,9 @@ export default function DraftArea({
           <p className="hint">
             {round === 1
               ? '点击抽卡，将从池中获得 3 位选手，选择 1 位加入队伍（可重抽 1 张）'
-              : '点击抽卡，将从池中随机获得 1 位选手（可拒绝并重抽 1 次）'}
+              : rejectUsedR2R4
+                ? '点击抽卡，将从池中随机获得 1 位选手（你的 R2-R4 拒绝机会已用完）'
+                : '点击抽卡，将从池中随机获得 1 位选手（R2-R4 合计可拒绝重抽 1 次）'}
           </p>
           <button className="btn-primary" onClick={onBegin} style={{ padding: '14px 32px', fontSize: 16 }}>
             抽卡
@@ -159,13 +164,15 @@ export default function DraftArea({
             <div className="player-card large">{turn.currentDraw.name}</div>
           </div>
           <p className="hint">
-            {turn.rejectUsed ? '拒绝机会已用完，请确认收下' : '你可以拒绝一次并重新抽取'}
+            {rejectUsedR2R4
+              ? 'R2-R4 拒绝机会已用完，请确认收下'
+              : '你可以拒绝一次并重新抽取（R2-R4 合计仅此 1 次）'}
           </p>
           <div className="action-row">
             <button className="btn-primary" onClick={onAccept}>
               确认收下
             </button>
-            <button className="btn-warning" disabled={turn.rejectUsed} onClick={onReject}>
+            <button className="btn-warning" disabled={rejectUsedR2R4} onClick={onReject}>
               拒绝并重抽
             </button>
           </div>

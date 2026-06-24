@@ -10,7 +10,7 @@ function formatTime(iso) {
 function noteText(entry) {
   if (entry.auto) return '系统自动';
   if (entry.rerolled) return 'R1 重抽后';
-  if (entry.rejected) return '拒绝后收下';
+  if (entry.rejected) return 'R2-R4 拒绝后收下';
   return '';
 }
 

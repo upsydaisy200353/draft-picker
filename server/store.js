@@ -61,6 +61,7 @@ function createInitialState() {
     teams,
     turn: null,
     history: [],
+    captainRejectUsed: {},
   };
 }
 
@@ -78,6 +79,7 @@ export function loadState() {
         state.teams[LEFTOVER_TEAM_ID] = [];
       }
       if (!state.history) state.history = [];
+      if (!state.captainRejectUsed) state.captainRejectUsed = {};
       return state;
     } catch {
       state = createInitialState();
@@ -204,6 +206,11 @@ export function getPublicState(forUser = null) {
   const currentCaptainId = s.captainOrder[s.currentIndex] ?? null;
   const currentCaptain = currentCaptainId ? getCaptainById(currentCaptainId) : null;
 
+  const captainRejectUsed =
+    currentCaptainId && s.round >= 2
+      ? (s.captainRejectUsed?.[currentCaptainId] ?? false)
+      : false;
+
   const turn = s.turn
     ? {
         phase: s.turn.phase,
@@ -212,9 +219,12 @@ export function getPublicState(forUser = null) {
           ? { id: s.turn.currentDraw.id, name: s.turn.currentDraw.name }
           : null,
         rerollUsed: s.turn.rerollUsed ?? false,
-        rejectUsed: s.turn.rejectUsed ?? false,
+        rejectUsed: s.round === 1 ? false : captainRejectUsed,
       }
     : null;
+
+  const nextRound =
+    s.status === 'idle' ? 1 : s.status === 'round_complete' && s.round < 4 ? s.round + 1 : null;
 
   const isAdmin = forUser?.role === 'admin';
   const isSpectator = forUser?.role === 'spectator';
@@ -236,9 +246,14 @@ export function getPublicState(forUser = null) {
     };
   }
 
+  const myRejectUsedR2R4 =
+    forUser?.role === 'captain' ? (s.captainRejectUsed?.[forUser.captainId] ?? false) : false;
+
   return {
     round: s.round,
     status: s.status,
+    nextRound,
+    myRejectUsedR2R4,
     captainOrder: s.captainOrder.map((id) => {
       const c = getCaptainById(id);
       return c ? { id: c.id, name: c.name, strength: c.strength } : { id };

@@ -137,9 +137,9 @@ export default function App() {
 
   const roundRules = {
     1: 'R1：抽3选1，可重抽1张',
-    2: 'R2：抽1人，可拒绝重抽1次',
-    3: 'R3：抽1人，可拒绝重抽1次',
-    4: 'R4：抽1人，可拒绝重抽1次',
+    2: 'R2：抽1人（R2-R4合计可拒绝重抽1次）',
+    3: 'R3：抽1人（R2-R4合计可拒绝重抽1次）',
+    4: 'R4：抽1人（R2-R4合计可拒绝重抽1次）',
   };
 
   const roleLabel = isSpectator
