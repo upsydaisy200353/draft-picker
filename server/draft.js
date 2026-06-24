@@ -128,7 +128,11 @@ export function selectCard(captainId, playerId) {
 
   const rerolled = s.turn.rerollUsed ?? false;
   pickPlayer(captainId, playerId);
-  recordPick(captainId, playerId, { rerolled });
+  recordPick(captainId, playerId, {
+    rerolled,
+    drawnOptions: s.turn.drawnCards.map((p) => ({ id: p.id, name: p.name })),
+    rerollSwap: s.turn.rerollSwap ?? null,
+  });
   finishCaptainTurn();
   return getPublicState();
 }
@@ -142,6 +146,7 @@ export function rerollCard(captainId, playerId) {
   const idx = s.turn.drawnCards.findIndex((p) => p.id === playerId);
   if (idx === -1) throw new Error('只能重抽本次抽到的卡牌');
 
+  const oldCard = s.turn.drawnCards[idx];
   const exclude = new Set(s.turn.drawnCards.map((p) => p.id));
   const available = drawRandom(getState().availablePlayerIds.length) ?? [];
   const replacement = available.find((p) => !exclude.has(p.id));
@@ -150,6 +155,10 @@ export function rerollCard(captainId, playerId) {
   updateState((st) => {
     st.turn.drawnCards[idx] = replacement;
     st.turn.rerollUsed = true;
+    st.turn.rerollSwap = {
+      from: { id: oldCard.id, name: oldCard.name },
+      to: { id: replacement.id, name: replacement.name },
+    };
   });
 
   return getPublicState();
@@ -163,7 +172,10 @@ export function acceptDraw(captainId) {
 
   const rejected = s.turn.rejectedThisPick ?? false;
   pickPlayer(captainId, s.turn.currentDraw.id);
-  recordPick(captainId, s.turn.currentDraw.id, { rejected });
+  recordPick(captainId, s.turn.currentDraw.id, {
+    rejected,
+    rejectSwap: s.turn.rejectSwap ?? null,
+  });
   finishCaptainTurn();
   return getPublicState();
 }
@@ -182,6 +194,10 @@ export function rejectDraw(captainId) {
   updateState((st) => {
     if (!st.captainRejectUsed) st.captainRejectUsed = {};
     st.captainRejectUsed[captainId] = true;
+    st.turn.rejectSwap = {
+      from: { id: s.turn.currentDraw.id, name: s.turn.currentDraw.name },
+      to: { id: replacement.id, name: replacement.name },
+    };
     st.turn.currentDraw = replacement;
     st.turn.rejectedThisPick = true;
   });

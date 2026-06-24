@@ -6,20 +6,27 @@ export default function AdminPanel({ state, api, onError }) {
   const [accounts, setAccounts] = useState(null);
 
   const nextRound = state.nextRound;
+  const canEditOrder = state.status !== 'drafting' && !!nextRound;
+  const orderRoundLabel = nextRound ?? state.round ?? 1;
 
   useEffect(() => {
-    if (state.captains?.length && order.length === 0) {
-      api('/api/suggested-order')
-        .then((data) => setOrder(data.order))
-        .catch(() => {
-          setOrder(
-            [...state.captains]
-              .sort((a, b) => a.strength - b.strength)
-              .map((c) => c.id),
-          );
-        });
+    if (!state.captains?.length || order.length > 0) return;
+
+    if (state.captainOrder?.length > 0) {
+      setOrder(state.captainOrder.map((c) => c.id));
+      return;
     }
-  }, [state.captains, order.length, api]);
+
+    api('/api/suggested-order')
+      .then((data) => setOrder(data.order))
+      .catch(() => {
+        setOrder(
+          [...state.captains]
+            .sort((a, b) => a.strength - b.strength)
+            .map((c) => c.id),
+        );
+      });
+  }, [state.captains, state.captainOrder, order.length, api]);
 
   const getCaptainName = (id) => state.captains.find((c) => c.id === id)?.name ?? id;
 
@@ -113,20 +120,25 @@ export default function AdminPanel({ state, api, onError }) {
       </div>
 
       <div className="admin-section">
-        <h3>本轮队长抽卡顺序（先抽 = 列表上方）</h3>
+        <h3>第 {orderRoundLabel} 轮队长抽卡顺序（先抽 = 列表上方）</h3>
+        <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 10 }}>
+          {canEditOrder
+            ? '每轮开始前可单独调整顺序，与上一轮互不影响；调整完毕后点击「开始第 N 轮」。'
+            : '抽卡进行中，顺序已锁定；本轮结束后可重新设置下一轮顺序。'}
+        </p>
         <div className="order-list">
           {order.map((id, i) => (
             <div key={id} className="order-item">
               <span className="num">{i + 1}</span>
               <span style={{ flex: 1 }}>{getCaptainName(id)}</span>
               <div className="order-controls" style={{ marginTop: 0, flex: 'none' }}>
-                <button className="btn-secondary" onClick={() => moveUp(i)} disabled={i === 0 || state.status === 'drafting'}>
+                <button className="btn-secondary" onClick={() => moveUp(i)} disabled={!canEditOrder || i === 0}>
                   ↑
                 </button>
                 <button
                   className="btn-secondary"
                   onClick={() => moveDown(i)}
-                  disabled={i === order.length - 1 || state.status === 'drafting'}
+                  disabled={!canEditOrder || i === order.length - 1}
                 >
                   ↓
                 </button>
@@ -135,7 +147,7 @@ export default function AdminPanel({ state, api, onError }) {
           ))}
         </div>
         <div className="action-row" style={{ justifyContent: 'flex-start', marginTop: 12 }}>
-          <button className="btn-secondary" onClick={useSuggestedOrder} disabled={state.status === 'drafting'}>
+          <button className="btn-secondary" onClick={useSuggestedOrder} disabled={!canEditOrder}>
             按实力弱→强排序
           </button>
         </div>

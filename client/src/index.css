@@ -430,14 +430,47 @@ input:focus {
 
 .history-item {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  gap: 6px;
   font-size: 13px;
   padding: 8px 12px;
   background: var(--surface2);
   border-radius: 8px;
   border: 1px solid var(--border);
+}
+
+.history-item-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.history-detail {
+  width: 100%;
+  font-size: 12px;
+  color: var(--muted);
+  padding-left: 72px;
+  line-height: 1.5;
+}
+
+.history-detail-label {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.history-option {
+  color: var(--muted);
+}
+
+.history-pick {
+  color: var(--success);
+  font-weight: 600;
+}
+
+.history-swap {
+  color: var(--warning);
 }
 
 .history-time {

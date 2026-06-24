@@ -324,6 +324,9 @@ export function getPublicState(forUser = null) {
       rerolled: h.rerolled ?? false,
       rejected: h.rejected ?? false,
       auto: h.auto ?? false,
+      drawnOptions: h.drawnOptions ?? null,
+      rerollSwap: h.rerollSwap ?? null,
+      rejectSwap: h.rejectSwap ?? null,
     })),
   };
 }

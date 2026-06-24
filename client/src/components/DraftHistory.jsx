@@ -9,9 +9,47 @@ function formatTime(iso) {
 
 function noteText(entry) {
   if (entry.auto) return '系统自动';
-  if (entry.rerolled) return 'R1 重抽后';
-  if (entry.rejected) return 'R2-R4 拒绝后收下';
+  if (entry.round === 1 && entry.drawnOptions?.length) return '三选一';
+  if (entry.rejectSwap) return '拒绝重抽';
   return '';
+}
+
+function HistoryDetail({ entry }) {
+  if (entry.auto) return null;
+
+  if (entry.round === 1 && entry.drawnOptions?.length) {
+    return (
+      <div className="history-detail">
+        <span className="history-detail-label">候选：</span>
+        {entry.drawnOptions.map((o, i) => (
+          <span key={o.id}>
+            <span className={o.name === entry.playerName ? 'history-pick' : 'history-option'}>
+              {o.name}
+            </span>
+            {i < entry.drawnOptions.length - 1 ? '、' : ''}
+          </span>
+        ))}
+        {entry.rerollSwap && (
+          <span className="history-swap">
+            {' '}· 重抽 {entry.rerollSwap.from.name} → {entry.rerollSwap.to.name}
+          </span>
+        )}
+      </div>
+    );
+  }
+
+  if (entry.rejectSwap) {
+    return (
+      <div className="history-detail">
+        <span className="history-detail-label">过程：</span>
+        先抽 <span className="history-option">{entry.rejectSwap.from.name}</span>
+        {' → '}
+        拒绝后换为 <span className="history-pick">{entry.rejectSwap.to.name}</span>
+      </div>
+    );
+  }
+
+  return null;
 }
 
 export default function DraftHistory({ history }) {
@@ -49,13 +87,17 @@ export default function DraftHistory({ history }) {
             <ul className="history-list">
               {byRound[round].map((entry) => {
                 const note = noteText(entry);
+                const detail = <HistoryDetail entry={entry} />;
                 return (
                   <li key={entry.id} className="history-item">
-                    <span className="history-time">{formatTime(entry.timestamp)}</span>
-                    <span className="history-team">{entry.teamName}</span>
-                    <span className="history-arrow">→</span>
-                    <span className="history-player">{entry.playerName}</span>
-                    {note && <span className="history-note">{note}</span>}
+                    <div className="history-item-main">
+                      <span className="history-time">{formatTime(entry.timestamp)}</span>
+                      <span className="history-team">{entry.teamName}</span>
+                      <span className="history-arrow">→</span>
+                      <span className="history-player">{entry.playerName}</span>
+                      {note && <span className="history-note">{note}</span>}
+                    </div>
+                    {detail}
                   </li>
                 );
               })}
