@@ -1,3 +1,5 @@
+import CaptainPresence from './CaptainPresence';
+
 export default function TeamBoard({ state }) {
   const currentId = state.currentCaptain?.id;
   const isComplete = state.status === 'complete';
@@ -5,6 +7,7 @@ export default function TeamBoard({ state }) {
   return (
     <div className="panel">
       <h2>各队阵容</h2>
+      {state.captains?.length > 0 && <CaptainPresence captains={state.captains} />}
       <div className="team-list">
         {state.teams.map((team) => (
           <div
@@ -19,6 +22,12 @@ export default function TeamBoard({ state }) {
           >
             <h3>
               {team.name}
+              {!team.isLeftover && (
+                <span className={`online-badge ${team.online ? 'on' : 'off'}`}>
+                  <span className="presence-dot" />
+                  {team.online ? '在线' : '离线'}
+                </span>
+              )}
               {team.strength != null && (
                 <span className="strength">实力 {team.strength}</span>
               )}

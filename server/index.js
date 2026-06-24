@@ -12,6 +12,10 @@ import {
   getPublicState,
 } from './store.js';
 import {
+  captainConnected,
+  captainDisconnected,
+} from './presence.js';
+import {
   startRound,
   beginDraw,
   selectCard,
@@ -170,10 +174,22 @@ io.use((socket, next) => {
 });
 
 io.on('connection', (socket) => {
+  if (socket.user.role === 'captain') {
+    captainConnected(socket.user.captainId);
+    broadcastState();
+  }
+
   socket.emit('state', getStateForUser(socket.user));
 
   socket.on('request-state', () => {
     socket.emit('state', getStateForUser(socket.user));
+  });
+
+  socket.on('disconnect', () => {
+    if (socket.user?.role === 'captain') {
+      captainDisconnected(socket.user.captainId);
+      broadcastState();
+    }
   });
 });
 

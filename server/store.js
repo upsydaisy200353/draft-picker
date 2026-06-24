@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import bcrypt from 'bcryptjs';
+import { getOnlineCaptainIds } from './presence.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CONFIG_PATH = path.join(__dirname, '../data/config.json');
@@ -165,6 +166,7 @@ export function getPublicState(forUser = null) {
 
   const isAdmin = forUser?.role === 'admin';
   const isCurrentCaptain = forUser?.role === 'captain' && forUser.captainId === currentCaptainId;
+  const onlineCaptainIds = new Set(getOnlineCaptainIds());
 
   return {
     round: s.round,
@@ -184,6 +186,7 @@ export function getPublicState(forUser = null) {
         name: c.name,
         strength: c.strength,
         isLeftover: false,
+        online: onlineCaptainIds.has(c.id),
         players: (s.teams[c.id] || []).map((pid) => {
           const p = getPlayerById(pid);
           return p ? { id: p.id, name: p.name } : { id: pid, name: '?' };
@@ -223,6 +226,7 @@ export function getPublicState(forUser = null) {
       name: c.name,
       strength: c.strength,
       username: c.username,
+      online: onlineCaptainIds.has(c.id),
     })),
   };
 }

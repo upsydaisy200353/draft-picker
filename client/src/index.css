@@ -276,6 +276,88 @@ input:focus {
   color: white !important;
 }
 
+.captain-presence {
+  background: var(--surface2);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  border: 1px solid var(--border);
+}
+
+.captain-presence-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.captain-presence-count {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.captain-presence-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.captain-presence-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.captain-presence-item.online {
+  border-color: rgba(34, 197, 94, 0.4);
+  background: rgba(34, 197, 94, 0.08);
+}
+
+.captain-presence-item.offline {
+  color: var(--muted);
+}
+
+.presence-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--muted);
+}
+
+.captain-presence-item.online .presence-dot,
+.online-badge.on .presence-dot {
+  background: var(--success);
+  box-shadow: 0 0 6px rgba(34, 197, 94, 0.6);
+}
+
+.online-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 500;
+}
+
+.online-badge.on {
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--success);
+}
+
+.online-badge.off {
+  background: var(--border);
+  color: var(--muted);
+}
+
 .team-card h3 {
   font-size: 15px;
   margin-bottom: 8px;
