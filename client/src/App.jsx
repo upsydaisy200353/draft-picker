@@ -62,8 +62,15 @@ export default function App() {
     if (!auth) return;
 
     const stateUrl = isSpectator ? '/api/public/state' : '/api/state';
-    fetch(`${API}${stateUrl}`)
-      .then((r) => r.json())
+    fetch(`${API}${stateUrl}`, {
+      headers: auth.token ? { Authorization: `Bearer ${auth.token}` } : {},
+    })
+      .then(async (r) => {
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(data.error || '加载状态失败');
+        if (!data.teams) throw new Error('状态数据无效');
+        return data;
+      })
       .then(setState)
       .catch((e) => setError(e.message));
 
@@ -180,7 +187,7 @@ export default function App() {
 
       {error && <div className="error-msg">{error}</div>}
 
-      {state && (
+      {state?.teams && (
         <>
           <div className="status-bar">
             <span className={`status-pill ${state.status === 'drafting' ? 'active' : ''}`}>
